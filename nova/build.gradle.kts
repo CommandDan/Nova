@@ -3,8 +3,9 @@ plugins {
     `maven-publish`
     alias(libs.plugins.kotlin)
     alias(libs.plugins.dokka)
-    id("xyz.xenondevs.bundler-plugin")
     alias(libs.plugins.paperweight)
+    id("xyz.xenondevs.access-widener-plugin")
+    id("xyz.xenondevs.bundler-plugin")
 }
 
 dependencies {

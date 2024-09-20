@@ -1,3 +1,4 @@
+package bundler
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
