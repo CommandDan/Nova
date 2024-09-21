@@ -2,14 +2,15 @@ package xyz.xenondevs.nova.util.bossbar
 
 import net.kyori.adventure.text.Component
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket
+import net.minecraft.network.protocol.game.ClientboundBossEventPacket.AddOperation
+import net.minecraft.network.protocol.game.ClientboundBossEventPacket.UpdateNameOperation
+import net.minecraft.network.protocol.game.ClientboundBossEventPacket.UpdateProgressOperation
+import net.minecraft.network.protocol.game.ClientboundBossEventPacket.UpdatePropertiesOperation
+import net.minecraft.network.protocol.game.ClientboundBossEventPacket.UpdateStyleOperation
 import net.minecraft.world.BossEvent
-import xyz.xenondevs.nova.network.ClientboundBossEventPacket
-import xyz.xenondevs.nova.util.bossbar.operation.AddBossBarOperation
-import xyz.xenondevs.nova.util.bossbar.operation.RemoveBossBarOperation
-import xyz.xenondevs.nova.util.bossbar.operation.UpdateNameBossBarOperation
-import xyz.xenondevs.nova.util.bossbar.operation.UpdateProgressBossBarOperation
-import xyz.xenondevs.nova.util.bossbar.operation.UpdatePropertiesBossBarOperation
-import xyz.xenondevs.nova.util.bossbar.operation.UpdateStyleBossBarOperation
+import xyz.xenondevs.nova.network.AddOperation
+import xyz.xenondevs.nova.util.component.adventure.toAdventureComponent
+import xyz.xenondevs.nova.util.component.adventure.toNMSComponent
 import java.util.*
 
 class BossBar(
@@ -27,18 +28,12 @@ class BossBar(
         set(value) {
             field = value
             
-            _addOperation = null
-            _updateNameOperation = null
-            
             _addPacket = null
             _updateNamePacket = null
         }
     var progress: Float = progress
         set(value) {
             field = value
-            
-            _addOperation = null
-            _updateProgressOperation = null
             
             _addPacket = null
             _updateProgressPacket = null
@@ -47,18 +42,12 @@ class BossBar(
         set(value) {
             field = value
             
-            _addOperation = null
-            _updateStyleOperation = null
-            
             _addPacket = null
             _updateStylePacket = null
         }
     var overlay: BossEvent.BossBarOverlay = overlay
         set(value) {
             field = value
-            
-            _addOperation = null
-            _updateStyleOperation = null
             
             _addPacket = null
             _updateStylePacket = null
@@ -67,18 +56,12 @@ class BossBar(
         set(value) {
             field = value
             
-            _addOperation = null
-            _updatePropertiesOperation = null
-            
             _addPacket = null
             _updatePropertiesPacket = null
         }
     var playMusic: Boolean = playMusic
         set(value) {
             field = value
-            
-            _addOperation = null
-            _updatePropertiesOperation = null
             
             _addPacket = null
             _updatePropertiesPacket = null
@@ -87,65 +70,15 @@ class BossBar(
         set(value) {
             field = value
             
-            _addOperation = null
-            _updatePropertiesOperation = null
-            
             _addPacket = null
             _updatePropertiesPacket = null
         }
-    
-    private var _addOperation: AddBossBarOperation? = null
-    val addOperation: AddBossBarOperation
-        get() {
-            if (_addOperation == null) {
-                _addOperation = AddBossBarOperation(this.name, progress, color, overlay, darkenScreen, playMusic, createWorldFog)
-            }
-            return _addOperation!!
-        }
-    
-    private var _updateNameOperation: UpdateNameBossBarOperation? = null
-    val updateNameOperation: UpdateNameBossBarOperation
-        get() {
-            if (_updateNameOperation == null) {
-                _updateNameOperation = UpdateNameBossBarOperation(this.name)
-            }
-            return _updateNameOperation!!
-        }
-    
-    private var _updateProgressOperation: UpdateProgressBossBarOperation? = null
-    val updateProgressOperation: UpdateProgressBossBarOperation
-        get() {
-            if (_updateProgressOperation == null) {
-                _updateProgressOperation = UpdateProgressBossBarOperation(progress)
-            }
-            return _updateProgressOperation!!
-        }
-    
-    private var _updateStyleOperation: UpdateStyleBossBarOperation? = null
-    val updateStyleOperation: UpdateStyleBossBarOperation
-        get() {
-            if (_updateStyleOperation == null) {
-                _updateStyleOperation = UpdateStyleBossBarOperation(color, overlay)
-            }
-            return _updateStyleOperation!!
-        }
-    
-    private var _updatePropertiesOperation: UpdatePropertiesBossBarOperation? = null
-    val updatePropertiesOperation: UpdatePropertiesBossBarOperation
-        get() {
-            if (_updatePropertiesOperation == null) {
-                _updatePropertiesOperation = UpdatePropertiesBossBarOperation(darkenScreen, playMusic, createWorldFog)
-            }
-            return _updatePropertiesOperation!!
-        }
-    
-    val removeOperation = RemoveBossBarOperation
     
     private var _addPacket: ClientboundBossEventPacket? = null
     val addPacket: ClientboundBossEventPacket
         get() {
             if (_addPacket == null) {
-                _addPacket = ClientboundBossEventPacket(id, addOperation)
+                _addPacket = ClientboundBossEventPacket(id, AddOperation(name, progress, color, overlay, darkenScreen, playMusic, createWorldFog))
             }
             return _addPacket!!
         }
@@ -154,7 +87,7 @@ class BossBar(
     val updateNamePacket: ClientboundBossEventPacket
         get() {
             if (_updateNamePacket == null) {
-                _updateNamePacket = ClientboundBossEventPacket(id, updateNameOperation)
+                _updateNamePacket = ClientboundBossEventPacket(id, UpdateNameOperation(name.toNMSComponent()))
             }
             return _updateNamePacket!!
         }
@@ -163,7 +96,7 @@ class BossBar(
     val updateProgressPacket: ClientboundBossEventPacket
         get() {
             if (_updateProgressPacket == null) {
-                _updateProgressPacket = ClientboundBossEventPacket(id, updateProgressOperation)
+                _updateProgressPacket = ClientboundBossEventPacket(id, UpdateProgressOperation(progress))
             }
             return _updateProgressPacket!!
         }
@@ -172,7 +105,7 @@ class BossBar(
     val updateStylePacket: ClientboundBossEventPacket
         get() {
             if (_updateStylePacket == null) {
-                _updateStylePacket = ClientboundBossEventPacket(id, updateStyleOperation)
+                _updateStylePacket = ClientboundBossEventPacket(id, UpdateStyleOperation(color, overlay))
             }
             return _updateStylePacket!!
         }
@@ -181,18 +114,18 @@ class BossBar(
     val updatePropertiesPacket: ClientboundBossEventPacket
         get() {
             if (_updatePropertiesPacket == null) {
-                _updatePropertiesPacket = ClientboundBossEventPacket(id, updatePropertiesOperation)
+                _updatePropertiesPacket = ClientboundBossEventPacket(id, UpdatePropertiesOperation(darkenScreen, playMusic, createWorldFog))
             }
             return _updatePropertiesPacket!!
         }
     
-    val removePacket = ClientboundBossEventPacket(id, removeOperation)
+    val removePacket = ClientboundBossEventPacket.createRemovePacket(id)
     
     companion object {
         
-        fun of(id: UUID, operation: AddBossBarOperation) = BossBar(
+        fun of(id: UUID, operation: AddOperation) = BossBar(
             id,
-            operation.name,
+            operation.name.toAdventureComponent(),
             operation.progress,
             operation.color,
             operation.overlay,

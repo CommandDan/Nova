@@ -2,6 +2,7 @@
 
 package xyz.xenondevs.nova.network
 
+import io.netty.buffer.ByteBuf
 import it.unimi.dsi.fastutil.objects.Object2IntMap
 import net.minecraft.network.PacketListener
 import net.minecraft.network.ProtocolInfo
@@ -15,11 +16,6 @@ import net.minecraft.network.protocol.game.GamePacketTypes
 import net.minecraft.network.protocol.game.GameProtocols
 import net.minecraft.network.protocol.ping.PingPacketTypes
 import xyz.xenondevs.nova.util.REGISTRY_ACCESS
-import java.lang.invoke.MethodHandles
-
-private val ID_DISPATCH_CODEC_TO_ID = MethodHandles
-    .privateLookupIn(IdDispatchCodec::class.java, MethodHandles.lookup())
-    .findGetter(IdDispatchCodec::class.java, "toId", Object2IntMap::class.java)
 
 internal object PacketIdRegistry {
     
@@ -213,8 +209,9 @@ internal object PacketIdRegistry {
     private fun <L : PacketListener, P : Packet<in L>> getPacketIdMap(
         template: ProtocolInfo.Unbound<L, RegistryFriendlyByteBuf>
     ): Object2IntMap<PacketType<P>> {
-        val codec = template.bind(RegistryFriendlyByteBuf.decorator(REGISTRY_ACCESS)).codec()
-        return ID_DISPATCH_CODEC_TO_ID.invoke(codec) as Object2IntMap<PacketType<P>>
+        val codec = template.bind(RegistryFriendlyByteBuf.decorator(REGISTRY_ACCESS)).codec() 
+            as IdDispatchCodec<ByteBuf, Packet<in L>, PacketType<P>>
+        return codec.toId
     }
     
 }

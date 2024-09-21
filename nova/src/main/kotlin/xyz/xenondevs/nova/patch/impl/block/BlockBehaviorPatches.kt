@@ -8,7 +8,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase
 import net.minecraft.world.level.block.state.BlockState
 import org.bukkit.block.data.BlockData
@@ -20,64 +19,7 @@ import xyz.xenondevs.nova.util.toNovaPos
 import xyz.xenondevs.nova.world.block.state.model.BackingStateConfig
 import xyz.xenondevs.nova.world.block.state.model.DisplayEntityBlockModelData
 import xyz.xenondevs.nova.world.format.WorldDataManager
-import java.lang.invoke.MethodHandles
-import java.lang.invoke.MethodType
 import java.util.logging.Level as LogLevel
-
-private val BLOCK_BEHAVIOR_LOOKUP = MethodHandles
-    .privateLookupIn(BlockBehaviour::class.java, MethodHandles.lookup())
-
-private val BLOCK_BEHAVIOR_NEIGHBOR_CHANGED = BLOCK_BEHAVIOR_LOOKUP.findVirtual(
-    BlockBehaviour::class.java,
-    "neighborChanged",
-    MethodType.methodType(
-        Void.TYPE,
-        BlockState::class.java,
-        Level::class.java,
-        BlockPos::class.java,
-        Block::class.java,
-        BlockPos::class.java,
-        Boolean::class.java
-    )
-)
-
-private val BLOCK_BEHAVIOR_UPDATE_SHAPE = BLOCK_BEHAVIOR_LOOKUP.findVirtual(
-    BlockBehaviour::class.java,
-    "updateShape",
-    MethodType.methodType(
-        BlockState::class.java,
-        BlockState::class.java,
-        Direction::class.java,
-        BlockState::class.java,
-        LevelAccessor::class.java,
-        BlockPos::class.java,
-        BlockPos::class.java
-    )
-)
-
-private val BLOCK_BEHAVIOR_TICK = BLOCK_BEHAVIOR_LOOKUP.findVirtual(
-    BlockBehaviour::class.java,
-    "tick",
-    MethodType.methodType(
-        Void.TYPE,
-        BlockState::class.java,
-        ServerLevel::class.java,
-        BlockPos::class.java,
-        RandomSource::class.java
-    )
-)
-
-private val BLOCK_BEHAVIOR_ENTITY_INSIDE = BLOCK_BEHAVIOR_LOOKUP.findVirtual(
-    BlockBehaviour::class.java,
-    "entityInside",
-    MethodType.methodType(
-        Void.TYPE,
-        BlockState::class.java,
-        Level::class.java,
-        BlockPos::class.java,
-        Entity::class.java
-    )
-)
 
 internal object BlockBehaviorPatches : MultiTransformer(BlockStateBase::class) {
     
@@ -99,7 +41,7 @@ internal object BlockBehaviorPatches : MultiTransformer(BlockStateBase::class) {
                 LOGGER.log(LogLevel.SEVERE, "Failed to handle neighbor change for $novaState at $novaPos", e)
             }
         } else {
-            BLOCK_BEHAVIOR_NEIGHBOR_CHANGED.invoke(thisRef.block, thisRef, level, pos, sourceBlock, sourcePos, notify)
+            thisRef.block.neighborChanged(thisRef as BlockState, level, pos, sourceBlock, sourcePos, notify)
         }
     }
     
@@ -133,7 +75,7 @@ internal object BlockBehaviorPatches : MultiTransformer(BlockStateBase::class) {
             }
         }
         
-        return BLOCK_BEHAVIOR_UPDATE_SHAPE.invoke(thisRef.block, thisRef, direction, neighborState, level, pos, neighborPos) as BlockState
+        return thisRef.block.updateShape(thisRef as BlockState, direction, neighborState, level, pos, neighborPos)
     }
     
     @JvmStatic
@@ -147,7 +89,7 @@ internal object BlockBehaviorPatches : MultiTransformer(BlockStateBase::class) {
                 LOGGER.log(LogLevel.SEVERE, "Failed to handle vanilla scheduled tick for $novaState at $pos", e)
             }
         } else {
-            BLOCK_BEHAVIOR_TICK.invoke(thisRef.block, thisRef, level, pos, random)
+            thisRef.block.tick(thisRef as BlockState, level as ServerLevel, pos, random)
         }
     }
     
@@ -162,7 +104,7 @@ internal object BlockBehaviorPatches : MultiTransformer(BlockStateBase::class) {
                 LOGGER.log(LogLevel.SEVERE, "Failed to handle entity inside for $novaState at $novaPos", e)
             }
         } else {
-            BLOCK_BEHAVIOR_ENTITY_INSIDE.invoke(thisRef.block, thisRef, level, pos, entity)
+            thisRef.block.entityInside(thisRef as BlockState, level, pos, entity)
         }
     }
     

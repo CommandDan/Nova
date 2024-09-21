@@ -1,5 +1,7 @@
 package xyz.xenondevs.nova.world.block.hitbox
 
+import net.minecraft.network.protocol.game.ServerboundInteractPacket.ATTACK_ACTION
+import net.minecraft.network.protocol.game.ServerboundInteractPacket.InteractionAtLocationAction
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.HitResult
@@ -19,7 +21,6 @@ import xyz.xenondevs.nova.network.event.PacketHandler
 import xyz.xenondevs.nova.network.event.PacketListener
 import xyz.xenondevs.nova.network.event.clientbound.ServerboundInteractPacketEvent
 import xyz.xenondevs.nova.network.event.registerPacketListener
-import xyz.xenondevs.nova.world.player.WrappedPlayerInteractEvent
 import xyz.xenondevs.nova.util.bukkitEquipmentSlot
 import xyz.xenondevs.nova.util.registerEvents
 import xyz.xenondevs.nova.util.runTask
@@ -29,11 +30,11 @@ import xyz.xenondevs.nova.util.toNovaPos
 import xyz.xenondevs.nova.util.toVec3
 import xyz.xenondevs.nova.world.BlockPos
 import xyz.xenondevs.nova.world.fakeentity.impl.FakeInteraction
+import xyz.xenondevs.nova.world.player.WrappedPlayerInteractEvent
 import xyz.xenondevs.nova.world.region.Region
 import xyz.xenondevs.nova.world.region.VisualRegion
 import java.util.*
 import org.bukkit.event.block.Action as BlockAction
-import xyz.xenondevs.nova.network.event.clientbound.ServerboundInteractPacketEvent.Action as EntityAction
 
 internal object HitboxManager : Listener, PacketListener {
     
@@ -132,8 +133,8 @@ internal object HitboxManager : Listener, PacketListener {
         runTask {
             val player = event.player
             when (val action = event.action) {
-                is EntityAction.Attack -> hitbox.leftClickHandlers.forEach { it.invoke(player) }
-                is EntityAction.InteractAtLocation -> {
+                ATTACK_ACTION -> hitbox.leftClickHandlers.forEach { it.invoke(player) }
+                is InteractionAtLocationAction -> {
                     val hand = action.hand.bukkitEquipmentSlot
                     val location = action.location.toVector3f()
                     hitbox.rightClickHandlers.forEach { it.invoke(player, hand, location) }
